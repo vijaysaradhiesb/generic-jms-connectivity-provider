@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xmlns:ctx="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                       http://www.springframework.org/schema/beans/spring-beans.xsd
+                       http://www.springframework.org/schema/osgi-compendium
+                       http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd
+                       http://www.springframework.org/schema/context
+                       http://www.springframework.org/schema/context/spring-context.xsd
+                       http://www.springframework.org/schema/osgi
+                       http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+    <osgix:cm-properties id="properties" persistent-id="com.integ.connectivity.jms1"/>
+    <ctx:property-placeholder properties-ref="properties"/>
+
+    <bean id="singleXAConnectionFactoryIn" class="org.apache.activemq.pool.JcaPooledConnectionFactory" depends-on="activeMQResourceManagerIn">
+        <property name="name" value="${jms1.xa.uniqueResourceName:jms1}In"/>
+        <property name="maxConnections" value="1"/>
+        <property name="connectionFactory" ref="activeMQConnectionFactoryBrokerIn"/>
+        <property name="transactionManager" ref="ariesTransactionManager"/>
+    </bean>
+    <bean id="activeMQConnectionFactoryBrokerIn" class="org.apache.activemq.ActiveMQXAConnectionFactory">
+        <property name="brokerURL" value="${jms1.url}"/>
+        <property name="userName" value="${jms1.user}"/>
+        <property name="password" value="${jms1.password}"/>
+        <property name="redeliveryPolicy" ref="redeliveryPolicyBroker"/>
+        <property name="prefetchPolicy" ref="activeMQPrefechPolicyBroker"/>
+        <property name="checkForDuplicates" value="false"/>
+        <property name="rmIdFromConnectionId" value="true"/>
+    </bean>
+    <bean id="activeMQResourceManagerIn" class="org.apache.activemq.jms.pool.GenericResourceManager" init-method="recoverResource">
+        <property name="transactionManager" ref="ariesTransactionManager" />
+        <property name="connectionFactory" ref="activeMQConnectionFactoryBrokerIn" />
+        <property name="resourceName" value="${jms1.xa.uniqueResourceName:jms1}In" />
+    </bean>
+
+    <bean id="singleXAConnectionFactoryOut" class="org.apache.activemq.pool.JcaPooledConnectionFactory" depends-on="activeMQResourceManagerOut">
+        <property name="name" value="${jms1.xa.uniqueResourceName}Out"/>
+        <property name="maxConnections" value="1"/>
+        <property name="connectionFactory" ref="activeMQConnectionFactoryBrokerOut"/>
+        <property name="transactionManager" ref="ariesTransactionManager"/>
+    </bean>
+    <bean id="activeMQConnectionFactoryBrokerOut" class="org.apache.activemq.ActiveMQXAConnectionFactory">
+        <property name="brokerURL" value="${jms1.url}"/>
+        <property name="userName" value="${jms1.user}"/>
+        <property name="password" value="${jms1.password}"/>
+        <property name="redeliveryPolicy" ref="redeliveryPolicyBroker"/>
+        <property name="prefetchPolicy" ref="activeMQPrefechPolicyBroker"/>
+        <property name="checkForDuplicates" value="false"/>
+        <property name="rmIdFromConnectionId" value="true"/>
+    </bean>
+    <bean id="activeMQResourceManagerOut" class="org.apache.activemq.jms.pool.GenericResourceManager" init-method="recoverResource">
+        <property name="transactionManager" ref="ariesTransactionManager" />
+        <property name="connectionFactory" ref="activeMQConnectionFactoryBrokerOut" />
+        <property name="resourceName" value="${jms1.xa.uniqueResourceName:jms1}Out" />
+    </bean>
+
+    <bean id="activeMQPrefechPolicyBroker" class="org.apache.activemq.ActiveMQPrefetchPolicy">
+        <property name="all" value="1"/>
+    </bean>
+
+    <bean id="redeliveryPolicyBroker" class="org.apache.activemq.RedeliveryPolicy">
+        <property name="maximumRedeliveries" value="0"/>
+    </bean>
+
+    <osgi:service ref="singleXAConnectionFactoryIn">
+        <osgi:interfaces>
+            <value>javax.jms.ConnectionFactory</value>
+            <value>javax.jms.QueueConnectionFactory</value>
+            <value>javax.jms.TopicConnectionFactory</value>
+        </osgi:interfaces>
+        <osgi:service-properties>
+            <entry key="integ.conn.jms.name" value="${jms1.osgi.name}"/>
+            <entry key="integ.conn.jms.default" value="${jms1.osgi.default:false}"/>
+            <entry key="integ.conn.jms.tx.direction" value="na"/>
+        </osgi:service-properties>
+    </osgi:service>
+    <osgi:service ref="singleXAConnectionFactoryIn">
+        <osgi:interfaces>
+            <value>javax.jms.ConnectionFactory</value>
+            <value>javax.jms.QueueConnectionFactory</value>
+            <value>javax.jms.TopicConnectionFactory</value>
+        </osgi:interfaces>
+        <osgi:service-properties>
+            <entry key="integ.conn.jms.name" value="${jms1.osgi.name}In"/>
+            <entry key="integ.conn.jms.default" value="${jms1.osgi.default:false}"/>
+            <entry key="integ.conn.jms.tx.direction" value="in"/>
+        </osgi:service-properties>
+    </osgi:service>
+    <osgi:service ref="singleXAConnectionFactoryOut">
+        <osgi:interfaces>
+            <value>javax.jms.ConnectionFactory</value>
+            <value>javax.jms.QueueConnectionFactory</value>
+            <value>javax.jms.TopicConnectionFactory</value>
+        </osgi:interfaces>
+        <osgi:service-properties>
+            <entry key="integ.conn.jms.name" value="${jms1.osgi.name}Out"/>
+            <entry key="integ.conn.jms.default" value="${jms1.osgi.default:false}"/>
+            <entry key="integ.conn.jms.tx.direction" value="out"/>
+        </osgi:service-properties>
+    </osgi:service>
+
+    <osgi:reference id="ariesTransactionManager">
+        <osgi:interfaces>
+            <value>javax.transaction.TransactionManager</value>
+            <value>org.apache.aries.transaction.AriesTransactionManager</value>
+        </osgi:interfaces>
+    </osgi:reference>
+
+</beans>

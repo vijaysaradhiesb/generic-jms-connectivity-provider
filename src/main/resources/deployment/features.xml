@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<features name="${feature.name}-${project.version}">
+    <!--
+        Usage:
+        features:addurl mvn:${project.groupId}/${project.artifactId}/${project.version}/xml/features
+     -->
+
+    <feature name="${feature.name}" version="${project.version}">
+        <feature>jndi</feature>
+        <feature>transaction</feature>
+        <feature>jms</feature>
+        <feature>activemq-camel</feature>
+        <feature>spring-dm</feature>
+
+        <bundle>mvn:${project.groupId}/${project.artifactId}/${project.version}</bundle>
+    </feature>
+
+    <feature name="${feature.name}-jms1" version="${pom.version}" resolver="(obr)">
+        <feature version="${pom.version}" >${feature.name}</feature>
+        <bundle start-level='60'>spring:mvn:${project.groupId}/${project.artifactId}/${project.version}/xml/connection-jms1</bundle>
+    </feature>
+
+    <feature name="${feature.name}-jms2" version="${pom.version}" resolver="(obr)">
+        <feature version="${pom.version}" >${feature.name}</feature>
+        <bundle start-level='60'>spring:mvn:${project.groupId}/${project.artifactId}/${project.version}/xml/connection-jms2</bundle>
+    </feature>
+
+    <feature name="${feature.name}-jms3" version="${pom.version}" resolver="(obr)">
+        <feature version="${pom.version}" >${feature.name}</feature>
+        <bundle start-level='60'>spring:mvn:${project.groupId}/${project.artifactId}/${project.version}/xml/connection-jms3</bundle>
+    </feature>
+
+    <feature name="${feature.name}-docker-connectivity" version="${pom.version}" resolver="(obr)"/>
+</features>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:osgix="http://www.springframework.org/schema/osgi-compendium"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xmlns:ctx="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                       http://www.springframework.org/schema/beans/spring-beans.xsd
+                       http://www.springframework.org/schema/osgi-compendium
+                       http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd
+                       http://www.springframework.org/schema/context
+                       http://www.springframework.org/schema/context/spring-context.xsd
+                       http://www.springframework.org/schema/osgi
+                       http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+
+    <bean id="singleXAConnectionFactory3" class="org.apache.activemq.pool.JcaPooledConnectionFactory" >
+        <property name="name" value="testJmsXa3"/>
+        <property name="maxConnections" value="1"/>
+        <property name="connectionFactory" ref="activeMQConnectionFactoryBroker3"/>
+        <property name="transactionManager" ref="ariesTransactionManager"/>
+    </bean>
+    <bean id="activeMQConnectionFactoryBroker3" class="org.apache.activemq.ActiveMQXAConnectionFactory">
+        <property name="brokerURL" value="${jms3.url:vm://testBroker3?create=false&amp;waitForStart=10000}"/>
+        <property name="userName" value="${jms3.user:}"/>
+        <property name="password" value="${jms3.password:}"/>
+        <property name="redeliveryPolicy" ref="redeliveryPolicyBroker3"/>
+        <property name="prefetchPolicy" ref="activeMQPrefechPolicyBroker3"/>
+        <property name="checkForDuplicates" value="false"/>
+        <property name="rmIdFromConnectionId" value="true"/>
+    </bean>
+
+    <bean id="singleXAConnectionFactory3In" class="org.apache.activemq.pool.JcaPooledConnectionFactory" >
+        <property name="name" value="testJmsXa3In"/>
+        <property name="maxConnections" value="1"/>
+        <property name="connectionFactory" ref="activeMQConnectionFactoryBroker3In"/>
+        <property name="transactionManager" ref="ariesTransactionManager"/>
+    </bean>
+    <bean id="activeMQConnectionFactoryBroker3In" class="org.apache.activemq.ActiveMQXAConnectionFactory">
+        <property name="brokerURL" value="${jms3.url:vm://testBroker3?create=false&amp;waitForStart=10000}"/>
+        <property name="userName" value="${jms3.user:}"/>
+        <property name="password" value="${jms3.password:}"/>
+        <property name="redeliveryPolicy" ref="redeliveryPolicyBroker3"/>
+        <property name="prefetchPolicy" ref="activeMQPrefechPolicyBroker3"/>
+        <property name="checkForDuplicates" value="false"/>
+        <property name="rmIdFromConnectionId" value="true"/>
+    </bean>
+
+    <bean id="singleXAConnectionFactory3Out" class="org.apache.activemq.pool.JcaPooledConnectionFactory" >
+        <property name="name" value="testJmsXa3Out"/>
+        <property name="maxConnections" value="1"/>
+        <property name="connectionFactory" ref="activeMQConnectionFactoryBroker3Out"/>
+        <property name="transactionManager" ref="ariesTransactionManager"/>
+    </bean>
+    <bean id="activeMQConnectionFactoryBroker3Out" class="org.apache.activemq.ActiveMQXAConnectionFactory">
+        <property name="brokerURL" value="${jms3.url:vm://testBroker3?create=false&amp;waitForStart=10000}"/>
+        <property name="userName" value="${jms3.user:}"/>
+        <property name="password" value="${jms3.password:}"/>
+        <property name="redeliveryPolicy" ref="redeliveryPolicyBroker3"/>
+        <property name="prefetchPolicy" ref="activeMQPrefechPolicyBroker3"/>
+        <property name="checkForDuplicates" value="false"/>
+        <property name="rmIdFromConnectionId" value="true"/>
+    </bean>
+
+    <bean id="activeMQPrefechPolicyBroker3" class="org.apache.activemq.ActiveMQPrefetchPolicy">
+        <property name="all" value="1"/>
+    </bean>
+
+    <bean id="redeliveryPolicyBroker3" class="org.apache.activemq.RedeliveryPolicy">
+        <property name="maximumRedeliveries" value="0"/>
+    </bean>
+
+</beans>

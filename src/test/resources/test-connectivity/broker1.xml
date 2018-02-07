@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+            http://activemq.apache.org/schema/core
+            http://activemq.apache.org/schema/core/activemq-core.xsd">
+
+
+    <bean id="randomUUID1" class="java.util.UUID" factory-method="randomUUID"/>
+
+    <!--
+    Embedded ActiveMQ Broker
+    -->
+    <broker id="testBroker1" brokerName="testBroker1" dataDirectory="target/testing/broker1/#{randomUUID1.toString()}" useJmx="false" persistent="true" schedulerSupport="true" schedulerDirectory="target/testing/broker1/#{randomUUID1.toString()}/scheduler" useShutdownHook="true" advisorySupport="false"  xmlns="http://activemq.apache.org/schema/core">
+        <destinationPolicy>
+            <policyMap>
+                <defaultEntry>
+                    <policyEntry producerFlowControl="true" usePrefetchExtension="false" queuePrefetch="1">
+                        <deadLetterStrategy>
+                            <individualDeadLetterStrategy queuePrefix="DLQ." topicPrefix="DLQ." useQueueForQueueMessages="true" useQueueForTopicMessages="true"/>
+                        </deadLetterStrategy>
+                    </policyEntry>
+                </defaultEntry>
+
+                <policyEntries>
+                    <!-- Policy for DLQAlert which should use different DLQ than other to avoid loop -->
+                    <policyEntry queue="DLQAlerts" producerFlowControl="true" usePrefetchExtension="false" queuePrefetch="1">
+                        <deadLetterStrategy>
+                            <individualDeadLetterStrategy queuePrefix="DLQUndelivered." useQueueForQueueMessages="true"/>
+                        </deadLetterStrategy>
+                    </policyEntry>
+                </policyEntries>
+            </policyMap>
+        </destinationPolicy>
+
+        <plugins>
+            <redeliveryPlugin fallbackToDeadLetter="true" sendToDlqIfMaxRetriesExceeded="true">
+                <redeliveryPolicyMap>
+                    <redeliveryPolicyMap>
+                        <redeliveryPolicyEntries>
+                            <redeliveryPolicy queue="DLQAlerts" maximumRedeliveries="1" initialRedeliveryDelay="1000" redeliveryDelay="1000"/>
+                        </redeliveryPolicyEntries>
+                        <defaultEntry>
+                            <redeliveryPolicy maximumRedeliveries="1" initialRedeliveryDelay="1000" redeliveryDelay="1000"/>
+                        </defaultEntry>
+                    </redeliveryPolicyMap>
+                </redeliveryPolicyMap>
+            </redeliveryPlugin>
+        </plugins>
+
+        <destinationInterceptors>
+            <virtualDestinationInterceptor>
+                <virtualDestinations>
+                    <!--
+                        THIS IS SUPPORTED SINCE 5.9
+                    -->
+                    <compositeQueue name="DLQ.>" copyMessage="true" forwardOnly="false">
+                        <forwardTo>
+                            <queue physicalName="DLQAlerts"/>
+                        </forwardTo>
+                    </compositeQueue>
+                    <virtualTopic name="VirtualTopic.>"/>
+                </virtualDestinations>
+            </virtualDestinationInterceptor>
+        </destinationInterceptors>
+
+        <persistenceAdapter>
+            <kahaDB directory="target/testing/broker1/#{randomUUID1.toString()}/kahadb/"/>
+        </persistenceAdapter>
+
+        <transportConnectors>
+            <transportConnector uri="tcp://localhost:0"/>
+        </transportConnectors>
+    </broker>
+</beans>
